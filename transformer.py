@@ -1,3 +1,5 @@
+# taken from https://github.com/karpathy/minGPT
+
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -156,6 +158,7 @@ class JEPA_Encoder(nn.Module):
 
         self.device = device
         self.block_size = block_size
+        self.encoder_dim = encoder_dim
         self.token_embedding_table = nn.Embedding(vocab_size, n_embed)
         self.position_embedding_table = nn.Embedding(block_size, n_embed)
         self.blocks = nn.Sequential(*[Block(n_embed, num_heads, block_size, dropout) for _ in range(num_layers)])
@@ -172,6 +175,17 @@ class JEPA_Encoder(nn.Module):
         x = self.blocks(x)
         x = self.ln_f(x)
         return x
+
+class JEPA_Encoder_LM(nn.Module):
+    def __init__(self, encoder, vocab_size):
+        super().__init__()
+        self.encoder = encoder
+        self.lm_head = nn.Linear(encoder.encoder_dim, vocab_size)
+
+    def forward(self, x):
+        encoded = self.encoder(x)
+        return self.lm_head(encoded[:, -1, :])
+
 
 class JEPA_Predictor(nn.Module):
     # this should be a series of feed forward layers that take in the encoded representations and output a prediction

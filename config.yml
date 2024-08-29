@@ -1,0 +1,25 @@
+train_split: 0.9
+eval_split: 0.1
+
+n_embed: 768
+num_heads: 6
+block_size: 512
+num_layers: 6
+encoder_dim: 384
+dropout: 0.2
+
+batch_size: 64
+num_epochs: 5
+lr: 0.0003
+split_ratio: 0.5
+ema_decay: 0.996
+ema_final: 1.0
+
+predictor_num_layers: 2
+predictor_dim_multiplier: 4
+
+finetine_lr: 0.0003
+finetine_batch_size: 64
+finetine_num_epochs: 100
+finetine_split_ratio: 0.5
+finetine_dropout: 0.2

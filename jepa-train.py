@@ -8,22 +8,26 @@ import signal
 import sys
 import copy
 from datetime import datetime
+import yaml
+
+with open('config.yml', 'r') as file:
+    config = yaml.safe_load(file)
 
 # -----------------------------
-n_embed = 384
-num_heads = 6
-num_layers = 6
-block_size = 256
-encoder_dim = 384
-batch_size = 64
-num_epochs = 1
-learning_rate = 3e-4
-chunk_size = 512
-split_ratio = 0.5
-ema_decay = 0.996
-ema_final = 1.0
-dropout = 0.2
-train_split = 0.95
+n_embed = config['n_embed']
+num_heads = config['num_heads']
+num_layers = config['num_layers']
+block_size = config['block_size']
+encoder_dim = config['encoder_dim']
+batch_size = config['batch_size']
+num_epochs = config['num_epochs']
+learning_rate = config['lr']
+split_ratio = config['split_ratio']
+ema_decay = config['ema_decay']
+ema_final = config['ema_final']
+dropout = config['dropout']
+train_split = config['train_split']
+predictor_num_layers = config['predictor_num_layers']
 device = torch.device('cuda' if torch.cuda.is_available() else 'mps')
 # -----------------------------
 
@@ -54,11 +58,11 @@ class JEPA_Dataset(Dataset):
         self.data = data
 
     def __len__(self):
-        return len(self.data) - chunk_size
+        return len(self.data) - block_size
 
     def __getitem__(self, idx):
-        chunk = self.data[idx:idx+chunk_size]
-        split_point = int(chunk_size * split_ratio)
+        chunk = self.data[idx:idx+block_size]
+        split_point = int(block_size * split_ratio)
         return chunk[:split_point], chunk[split_point:]
     
 train_dataset = JEPA_Dataset(train_data)
@@ -67,7 +71,7 @@ train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True
 test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 encoder = JEPA_Encoder(vocab_size, n_embed, num_heads, block_size, num_layers, encoder_dim, device, dropout).to(device)
-predictor = JEPA_Predictor_Transformer(n_embed, num_heads, block_size, num_layers, device, dropout).to(device)
+predictor = JEPA_Predictor_Transformer(n_embed, num_heads, block_size, predictor_num_layers, device, dropout).to(device)
 print(sum(p.numel() for p in encoder.parameters())/1e6, 'M parameters for encoder')
 print(sum(p.numel() for p in predictor.parameters())/1e6, 'M parameters for predictor')
 
