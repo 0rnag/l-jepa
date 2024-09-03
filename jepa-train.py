@@ -9,6 +9,7 @@ import sys
 import copy
 from datetime import datetime
 import yaml
+import random
 
 with open('config.yml', 'r') as file:
     config = yaml.safe_load(file)
@@ -22,11 +23,12 @@ encoder_dim = config['encoder_dim']
 batch_size = config['batch_size']
 num_epochs = config['num_epochs']
 learning_rate = config['lr']
-split_ratio = config['split_ratio']
+train_split = config['train_split']
 ema_decay = config['ema_decay']
 ema_final = config['ema_final']
 dropout = config['dropout']
-train_split = config['train_split']
+min_masked_tokens = config['min_masked_tokens']
+max_masked_tokens = config['max_masked_tokens']
 predictor_num_layers = config['predictor_num_layers']
 device = torch.device('cuda' if torch.cuda.is_available() else 'mps')
 # -----------------------------
@@ -42,6 +44,7 @@ with open('data/input.txt', 'r', encoding='utf-8') as file:
     text = file.read()
 
 vocab = sorted(list(set(text)))
+vocab.append('<mask>')
 vocab_size = len(vocab)
 
 # create a mapping from characters to integers
@@ -58,12 +61,15 @@ class JEPA_Dataset(Dataset):
         self.data = data
 
     def __len__(self):
-        return len(self.data) - block_size
+        return len(self.data) - block_size + 1
 
     def __getitem__(self, idx):
         chunk = self.data[idx:idx+block_size]
-        split_point = int(block_size * split_ratio)
-        return chunk[:split_point], chunk[split_point:]
+        #num_masked = random.randint(int(min_masked_tokens * block_size), int(max_masked_tokens * block_size))
+        num_masked = int(max_masked_tokens * block_size)
+        split_point = random.randint(0, block_size - num_masked)
+        masked_chunk = torch.cat((chunk[0:split_point], torch.tensor(encode(['<mask>'])*num_masked), chunk[split_point+num_masked:]))
+        return chunk, masked_chunk
     
 train_dataset = JEPA_Dataset(train_data)
 test_dataset = JEPA_Dataset(test_data)

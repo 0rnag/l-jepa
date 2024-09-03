@@ -25,8 +25,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'mps')
 with open('data/input.txt', 'r', encoding='utf-8') as f:
     text = f.read()
 
-chars = sorted(list(set(text)))
-vocab_size = len(chars)
+vocab = sorted(list(set(text)))
+vocab.append('<mask>')
+vocab_size = len(vocab)
 
 encoder = JEPA_Encoder(vocab_size, n_embed, num_heads, block_size, num_layers, encoder_dim, device, dropout).to(device)
 encoder.load_state_dict(torch.load('models/jepa_encoder.pth', weights_only=True))
@@ -37,8 +38,8 @@ model.load_state_dict(torch.load('models/jepa_encoder_lm.pth', weights_only=True
 encoder.eval()
 model.eval()
 
-stoi = {ch: i for i, ch in enumerate(chars)}
-itos = {i: ch for i, ch in enumerate(chars)}
+stoi = {ch: i for i, ch in enumerate(vocab)}
+itos = {i: ch for i, ch in enumerate(vocab)}
 encode = lambda s: [stoi[c] for c in s]
 decode = lambda l: ''.join([itos[i] for i in l])
 

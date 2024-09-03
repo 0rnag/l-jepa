@@ -1,4 +1,4 @@
-# taken from https://github.com/karpathy/minGPT
+# taken from https://github.com/karpathy/ng-video-lecture
 
 import torch
 import torch.nn as nn

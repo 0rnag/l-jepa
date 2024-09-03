@@ -19,22 +19,23 @@ num_layers = config['num_layers']
 block_size = config['block_size']
 encoder_dim = config['encoder_dim']
 batch_size = config['batch_size']
-num_epochs = config['finetine_num_epochs']
-learning_rate = config['finetine_lr']
-split_ratio = config['finetine_split_ratio']
-dropout = config['finetine_dropout']
-train_split = config['finetine_split_ratio']
+num_epochs = config['finetune_num_epochs']
+learning_rate = config['finetune_lr']
+split_ratio = config['finetune_split_ratio']
+dropout = config['finetune_dropout']
+train_split = config['finetune_split_ratio']
 device = torch.device('cuda' if torch.cuda.is_available() else 'mps')
 # -----------------------------
 
 with open('data/input.txt', 'r', encoding='utf-8') as f:
     text = f.read()
 
-chars = sorted(list(set(text)))
-vocab_size = len(chars)
+vocab = sorted(list(set(text)))
+vocab.append('<mask>')
+vocab_size = len(vocab)
 
-stoi = {ch: i for i, ch in enumerate(chars)}
-itos = {i: ch for i, ch in enumerate(chars)}
+stoi = {ch: i for i, ch in enumerate(vocab)}
+itos = {i: ch for i, ch in enumerate(vocab)}
 encode = lambda s: [stoi[c] for c in s]
 decode = lambda l: ''.join([itos[i] for i in l])
 
@@ -72,7 +73,7 @@ try:
     for epoch in range(num_epochs):
         model.train()
         total_loss = 0
-        #batches = len(data) // (batch_size * block_size)
+        #batches = (len(data) - block_size) // batch_size
         batches = 10
         for _ in range(batches):
             x, y = get_batch()
