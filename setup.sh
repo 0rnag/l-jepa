@@ -1,12 +1,18 @@
 #!/bin/bash
 
-mkdir models
-mkdir figures
-mkdir data
+# setup for running on cloud
+set -e
+set -x 
+mkdir -p models figures data
+
 cd data
-wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
+wget -N https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
 cd ..
 
-python -m venv .venv
-source .venv/bin/activate
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+
+python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+touch setup_complete.flag
+
+echo "Setup completed successfully"
