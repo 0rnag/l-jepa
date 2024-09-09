@@ -19,7 +19,7 @@ ema_final: 1.0
 predictor_num_layers: 2
 predictor_dim_multiplier: 4
 
-finetune_lr: 0.0003
+finetune_lr: 0.00008
 finetune_batch_size: 64
 finetune_num_epochs: 100
 finetune_split_ratio: 0.5

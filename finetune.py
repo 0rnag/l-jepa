@@ -49,7 +49,16 @@ def get_batch():
     return x.to(device), y.to(device)
 
 encoder = JEPA_Encoder(vocab_size, n_embed, num_heads, block_size, num_layers, encoder_dim, device, dropout).to(device)
-encoder.load_state_dict(torch.load('models/jepa_encoder.pth', weights_only=True))
+
+checkpoint_path = 'models/jepa_checkpoint_epoch_0_batch_6500.pth'
+checkpoint = torch.load(checkpoint_path, weights_only=True)
+#encoder.load_state_dict(checkpoint['encoder_state_dict'])
+#predictor.load_state_dict(checkpoint['predictor_state_dict'])
+#ema_encoder.load_state_dict(checkpoint['ema_encoder_state_dict'])
+#optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+#encoder.load_state_dict(torch.load('models/jepa_encoder.pth', weights_only=True))
+encoder.load_state_dict(checkpoint['encoder_state_dict'])
 
 model = JEPA_Encoder_LM(encoder, vocab_size).to(device)
 
@@ -73,8 +82,9 @@ try:
     for epoch in range(num_epochs):
         model.train()
         total_loss = 0
-        #batches = (len(data) - block_size) // batch_size
-        batches = 10
+        batches = (len(data) - block_size) // batch_size
+        print(batches)
+        exit()
         for _ in range(batches):
             x, y = get_batch()
             optimizer.zero_grad()

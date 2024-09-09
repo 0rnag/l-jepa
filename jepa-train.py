@@ -178,8 +178,10 @@ def train():
                     if torch.cuda.is_available():
                         writer.add_scalar('GPU/memory_allocated', torch.cuda.memory_allocated(device), epoch * len(train_dataloader) + batch_idx)
                         writer.add_scalar('GPU/memory_cached', torch.cuda.memory_cached(device), epoch * len(train_dataloader) + batch_idx)
-
-                    save_checkpoint(epoch, batch_idx, batch_losses)
+                    
+                    if batch_idx % 1000 == 0:
+                        save_checkpoint(epoch, batch_idx, batch_losses)
+                        
 
                 global_batch_idx += 1
 
@@ -187,6 +189,7 @@ def train():
             epoch_losses.append(avg_epoch_loss)
             print(f"Epoch {epoch+1} average loss: {avg_epoch_loss:.4f}")
 
+            
             save_checkpoint(epoch, len(train_dataloader) - 1, batch_losses)
 
             if avg_epoch_loss < best_loss:
