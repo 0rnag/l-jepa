@@ -50,7 +50,7 @@ def get_batch():
 
 encoder = JEPA_Encoder(vocab_size, n_embed, num_heads, block_size, num_layers, encoder_dim, device, dropout).to(device)
 
-checkpoint_path = 'models/jepa_checkpoint_epoch_0_batch_6500.pth'
+checkpoint_path = 'models/jepa_checkpoint_epoch_0_batch_6000.pth'
 checkpoint = torch.load(checkpoint_path, weights_only=True)
 #encoder.load_state_dict(checkpoint['encoder_state_dict'])
 #predictor.load_state_dict(checkpoint['predictor_state_dict'])
@@ -81,23 +81,30 @@ criterion = nn.CrossEntropyLoss()
 try:
     for epoch in range(num_epochs):
         model.train()
-        total_loss = 0
+        #total_loss = 0
         batches = (len(data) - block_size) // batch_size
-        print(batches)
-        exit()
-        for _ in range(batches):
+    
+        for batch_idx in range(batches):
             x, y = get_batch()
             optimizer.zero_grad()
             logits = model(x)
             loss = criterion(logits, y[:, -1])
             loss.backward()
             optimizer.step()
-            total_loss += loss.item()
+            #total_loss += loss.item()
+            losses.append(loss.item())
 
-        avg_loss = total_loss / batches
-        losses.append(avg_loss)
+            if batch_idx % 100 == 0:
+                print(f"Epoch {epoch+1}, batch {batch_idx}, loss {loss.item()}") 
 
-        print(f"Epoch {epoch+1}, Loss: {avg_loss:.4f}")
+            if interrupt:
+                print("Training interrupted")
+                break
+
+        #avg_loss = total_loss / batches
+        #losses.append(avg_loss)
+
+        #print(f"Epoch {epoch+1}, Loss: {avg_loss:.4f}")
 
         if interrupt:
             print("Training interrupted")

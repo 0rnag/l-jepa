@@ -181,7 +181,7 @@ def train():
                     
                     if batch_idx % 1000 == 0:
                         save_checkpoint(epoch, batch_idx, batch_losses)
-                        
+
 
                 global_batch_idx += 1
 
@@ -202,6 +202,7 @@ def train():
     finally:
         plot_loss(batch_losses, epoch_losses)
         writer.close()
+        save_checkpoint(epoch, batch_idx)
         print("Training complete. Models and checkpoints saved.")
     
 
